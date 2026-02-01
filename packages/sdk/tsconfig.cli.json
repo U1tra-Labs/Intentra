@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "types": ["node"]
+  },
+  "include": [
+    "src/abi/**/*",
+    "src/logReader.ts",
+    "src/bridgeObserver.ts",
+    "src/cli/**/*",
+    "src/index.ts"
+  ]
+}
