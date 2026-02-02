@@ -1,4 +1,4 @@
-import { hashTypedData } from "viem";
+import { encodeAbiParameters, hashTypedData, keccak256, toHex } from "viem";
 import type { Address, Hex, TradingIntent } from "./types";
 
 export interface IntentDomain {
@@ -36,6 +36,10 @@ export const INTENT_TYPES = {
   ]
 } as const;
 
+const COMMITMENT_TYPEHASH = keccak256(
+  toHex("Commitment(bytes32 intentHash,bytes32 planHash,uint256 notBefore,bytes32 salt)")
+);
+
 export function buildIntentDomain(domain: IntentDomain) {
   return {
     name: domain.name ?? "IntentChannel",
@@ -52,6 +56,26 @@ export function hashIntent(intent: TradingIntent, domain: IntentDomain): Hex {
     primaryType: "TradingIntent",
     message: intent
   });
+}
+
+export function hashCommitment(params: {
+  intentHash: Hex;
+  planHash: Hex;
+  notBefore: bigint | number;
+  salt: Hex;
+}): Hex {
+  return keccak256(
+    encodeAbiParameters(
+      [
+        { name: "typeHash", type: "bytes32" },
+        { name: "intentHash", type: "bytes32" },
+        { name: "planHash", type: "bytes32" },
+        { name: "notBefore", type: "uint256" },
+        { name: "salt", type: "bytes32" }
+      ],
+      [COMMITMENT_TYPEHASH, params.intentHash, params.planHash, BigInt(params.notBefore), params.salt]
+    )
+  );
 }
 
 export async function signIntent(

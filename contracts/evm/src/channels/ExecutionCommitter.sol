@@ -34,7 +34,18 @@ contract ExecutionCommitter is IUnlockCallback {
     poolManager = poolManager_;
   }
 
-  function execute(IIntent.ExecutionPlan calldata plan) external returns (uint256 amountOut, bool usedFallback) {
+  function executeWithReveal(
+    bytes32 commitment,
+    IIntent.TradingIntent calldata intent,
+    bytes calldata traderSig,
+    IIntent.ExecutionPlan calldata plan,
+    bytes32 salt
+  ) external returns (uint256 amountOut, bool usedFallback) {
+    channel.revealIntent(commitment, intent, traderSig, plan, salt);
+    return execute(plan);
+  }
+
+  function execute(IIntent.ExecutionPlan calldata plan) public returns (uint256 amountOut, bool usedFallback) {
     // forge-lint: disable-next-line(asm-keccak256)
     bytes32 planHash = keccak256(abi.encode(plan));
     require(channel.planHashOf(plan.intentHash) == planHash, "PLAN_HASH_MISMATCH");

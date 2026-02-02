@@ -59,6 +59,7 @@ contract YellowClearingHook is BaseHook {
 
     require(channel.planHashOf(intentHash) != bytes32(0), "INTENT_NOT_COMMITTED");
     require(channel.status(intentHash) == IntentChannel.IntentStatus.Released, "NOT_RELEASED");
+    require(block.timestamp >= channel.notBeforeOf(intentHash), "BATCH_NOT_READY");
     require(block.timestamp <= deadline, "HOOK_DEADLINE");
     require(block.timestamp <= channel.deadlineOf(intentHash), "INTENT_DEADLINE");
     require(minOut == channel.minOutOf(intentHash), "MIN_OUT_MISMATCH");
