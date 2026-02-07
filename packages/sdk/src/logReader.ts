@@ -40,8 +40,12 @@ function toStringValue(value: unknown): string {
 
 function colorEvent(name: string, usedFallback?: boolean): string {
   if (name === "IntentCommitted") return chalk.cyan(name);
+  if (name === "IntentCommittedPrivate") return chalk.cyan(name);
+  if (name === "IntentRevealed") return chalk.magenta(name);
   if (name === "IntentReleased") return chalk.blue(name);
-  if (name === "IntentCancelled" || name === "IntentRefunded") return chalk.red(name);
+  if (name === "IntentCancelled" || name === "IntentRefunded" || name === "CommitmentCancelled") {
+    return chalk.red(name);
+  }
   if (name === "IntentExecuted") {
     return usedFallback ? chalk.yellow("IntentExecuted(AMM)") : chalk.green("IntentExecuted(RFQ)");
   }
@@ -70,7 +74,9 @@ export async function watchIntentChannel(
         seen.add(key);
 
         const name = log.eventName;
-        const intentHashFull = String((log.args as any).intentHash ?? "") as `0x${string}`;
+        const intentHashFull = String(
+          (log.args as any).intentHash ?? (log.args as any).commitment ?? ""
+        ) as `0x${string}`;
         const intentHash = shortHex(intentHashFull);
         const usedFallback = name === "IntentExecuted" ? Boolean((log.args as any).usedFallback) : undefined;
         const eventLabel = colorEvent(name, usedFallback);
@@ -81,6 +87,14 @@ export async function watchIntentChannel(
           fields.push(`amountIn=${toStringValue((log.args as any).amountIn)}`);
           fields.push(`minOut=${toStringValue((log.args as any).minOut)}`);
           fields.push(`dl=${toStringValue((log.args as any).deadline)}`);
+        } else if (name === "IntentCommittedPrivate") {
+          fields.push(`trader=${shortHex(String((log.args as any).trader))}`);
+          fields.push(`amountIn=${toStringValue((log.args as any).amountIn)}`);
+          fields.push(`notBefore=${toStringValue((log.args as any).notBefore)}`);
+          fields.push(`dl=${toStringValue((log.args as any).deadline)}`);
+        } else if (name === "IntentRevealed") {
+          fields.push(`commitment=${shortHex(String((log.args as any).commitment))}`);
+          fields.push(`planHash=${shortHex(String((log.args as any).planHash))}`);
         } else if (name === "IntentReleased") {
           fields.push(`to=${shortHex(String((log.args as any).to))}`);
           fields.push(`amountIn=${toStringValue((log.args as any).amountIn)}`);
@@ -109,6 +123,9 @@ export async function watchIntentChannel(
               blockNumber: log.blockNumber
             });
           }
+        } else if (name === "CommitmentCancelled") {
+          fields.push(`trader=${shortHex(String((log.args as any).trader))}`);
+          fields.push(`refund=${toStringValue((log.args as any).refundAmount)}`);
         }
 
         const meta = `chain=${chainId} tx=${shortHex(log.transactionHash)}`;
