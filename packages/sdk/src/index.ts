@@ -10,3 +10,7 @@ export {
   PYTH_HERMES_URL
 } from "./pyth.js";
 export type { PythPrice, PythPriceResult } from "./pyth.js";
+export { hashCommitment, alignToBatchWindow, calculateNotBefore, generateSalt } from "./privacy/index.js";
+export type { CommitmentRecord } from "./privacy/index.js";
+export { hashCommitmentAuthorization, signCommitmentAuthorization } from "./privacy/eip712.js";
+export type { CommitmentAuthorization } from "./privacy/eip712.js";
