@@ -355,7 +355,7 @@ contract IntentChannel {
 
   function _alignToBatchWindow(uint256 timestamp) internal view returns (uint256) {
     if (batchWindow == 0) return timestamp;
-    uint256 rounded = (timestamp / batchWindow) * batchWindow;
+    uint256 rounded = timestamp - (timestamp % batchWindow);
     if (timestamp % batchWindow == 0) return timestamp;
     return rounded + batchWindow;
   }
